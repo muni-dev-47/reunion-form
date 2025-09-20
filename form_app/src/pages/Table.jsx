@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import EmployeeDetails from "./EmployeeDetails";
 import { useNavigate } from "react-router";
+import { FaUsers, FaUserPlus, FaSearch, FaFilter, FaSortAmountDown } from 'react-icons/fa';
 
 const Table = () => {
     const [users, setUsers] = useState([]);
@@ -9,6 +10,9 @@ const Table = () => {
     const [error, setError] = useState("");
     const [selectedUser, setSelectedUser] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [sortBy, setSortBy] = useState("asc");
+    const [filterActive, setFilterActive] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -53,17 +57,50 @@ const Table = () => {
         </div>
     );
 
+    const filteredUsers = users.filter(user => 
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.mobileNumber.includes(searchTerm)
+    );
+
     return (
-        <div className="container mt-4">
-            <div className="card shadow-sm border-0">
-                <div className="card-header bg-primary text-white py-3 position-relative">
-                    <h2 className="h4 mb-0">
-                        <i className="fas fa-users me-2"></i>
-                        User Directory
-                    </h2>
-                    <div className="position-absolute top-0 end-0 mt-3 me-4 badge bg-light text-dark">
-                        <i className="fas fa-phone me-1"></i>
-                        {users.length} Contacts
+        <div className="dashboard-container">
+            {/* Stats Section */}
+            <div className="stats-section">
+                <div className="stat-card">
+                    <div className="stat-icon">
+                        <FaUsers />
+                    </div>
+                    <div className="stat-content">
+                        <h3>{users.length}</h3>
+                        <p>Total Users</p>
+                    </div>
+                </div>
+            </div>
+
+            <div className="main-card">
+                <div className="card-header">
+                    <div className="header-content">
+                        <h2 className="dashboard-title">
+                            <FaUsers className="title-icon" />
+                            User Directory
+                        </h2>
+                        <div className="search-filter-section">
+                            <div className="search-box">
+                                <FaSearch className="search-icon" />
+                                <input
+                                    type="text"
+                                    placeholder="Search users..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <button 
+                                className="sort-btn"
+                                onClick={() => setSortBy(sortBy === 'asc' ? 'desc' : 'asc')}
+                            >
+                                <FaSortAmountDown />
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div className="card-body p-0">
@@ -77,8 +114,14 @@ const Table = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {users.length > 0 ? (
-                                    users.map((user, index) => (
+                                {filteredUsers.length > 0 ? (
+                                    filteredUsers.sort((a, b) => {
+                                        if (sortBy === "asc") {
+                                            return a.name.localeCompare(b.name);
+                                        } else {
+                                            return b.name.localeCompare(a.name);
+                                        }
+                                    }).map((user, index) => (
                                         <tr key={index}>
                                             <td className="ps-4 fw-bold align-middle">
                                                 <div className="d-flex align-items-center">
@@ -127,12 +170,6 @@ const Table = () => {
                                 Showing {users.length} records
                             </small>
                         </div>
-                        <div className="col-md-6 text-md-end">
-                            <button className="btn btn-sm btn-primary" onClick={() => navigate('/')}>
-                                <i className="fas fa-plus me-1"></i>
-                                Add User
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -146,15 +183,151 @@ const Table = () => {
             )}
 
             <style>{`
-                .action-btn {
+                .dashboard-container {
+                    padding: 2rem;
+                    background: #f8f9fc;
+                    min-height: 100vh;
+                }
+
+                .stats-section {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 1.5rem;
+                    margin-bottom: 2rem;
+                }
+
+                .stat-card {
+                    background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%);
+                    padding: 1.5rem;
+                    border-radius: 15px;
+                    display: flex;
+                    align-items: center;
+                    gap: 1rem;
+                    color: white;
+                    transition: transform 0.3s ease;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                }
+
+                .stat-card:hover {
+                    transform: translateY(-5px);
+                }
+
+                .stat-icon {
+                    background: rgba(255,255,255,0.2);
+                    padding: 1rem;
+                    border-radius: 12px;
+                    font-size: 1.5rem;
+                }
+
+                .stat-content h3 {
+                    font-size: 1.8rem;
+                    margin: 0;
+                }
+
+                .stat-content p {
+                    margin: 0;
+                    opacity: 0.8;
+                }
+
+                .main-card {
+                    background: white;
                     border-radius: 20px;
-                    padding: 5px 15px;
-                    background: linear-gradient(45deg, #4e73df, #224abe);
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+                    overflow: hidden;
+                }
+
+                .card-header {
+                    background: white;
+                    padding: 1.5rem;
+                    border-bottom: 1px solid rgba(0,0,0,0.08);
+                }
+
+                .header-content {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    flex-wrap: wrap;
+                    gap: 1rem;
+                }
+
+                .dashboard-title {
+                    font-size: 1.5rem;
+                    color: #2c3e50;
+                    margin: 0;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.5rem;
+                }
+
+                .title-icon {
+                    color: #6B8DD6;
+                }
+
+                .search-filter-section {
+                    display: flex;
+                    gap: 1rem;
+                    align-items: center;
+                }
+
+                .search-box {
+                    position: relative;
+                    width: 300px;
+                }
+
+                .search-icon {
+                    position: absolute;
+                    left: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #6B8DD6;
+                }
+
+                .search-box input {
+                    width: 100%;
+                    padding: 0.8rem 1rem 0.8rem 2.5rem;
+                    border: 1px solid #e1e5eb;
+                    border-radius: 10px;
+                    font-size: 0.9rem;
+                    transition: all 0.3s ease;
+                }
+
+                .search-box input:focus {
+                    outline: none;
+                    border-color: #6B8DD6;
+                    box-shadow: 0 0 0 3px rgba(107,141,214,0.1);
+                }
+
+                .filter-btn, .sort-btn {
+                    background: white;
+                    border: 1px solid #e1e5eb;
+                    padding: 0.8rem;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    color: #6B8DD6;
+                }
+
+                .filter-btn:hover, .sort-btn:hover {
+                    background: #f8f9fc;
+                    border-color: #6B8DD6;
+                }
+
+                .filter-btn.active {
+                    background: #6B8DD6;
+                    color: white;
+                    border-color: #6B8DD6;
+                }
+
+                .action-btn {
+                    border-radius: 10px;
+                    padding: 8px 16px;
+                    background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%);
                     border: none;
                     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
                     transition: all 0.3s ease;
                     position: relative;
                     overflow: hidden;
+                    color: white;
                 }
                 
                 .action-btn::before {
@@ -183,44 +356,83 @@ const Table = () => {
                     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
                 }
                 
-                .table-hover tbody tr:hover {
-                    background-color: rgba(78, 115, 223, 0.05);
-                    transform: translateY(1px);
-                    transition: transform 0.2s ease;
+                .table-hover tbody tr {
+                    transition: all 0.3s ease;
+                    border-bottom: 1px solid #f1f1f1;
                 }
-                
-                .card {
-                    border-radius: 15px;
-                    overflow: hidden;
+
+                .table-hover tbody tr:hover {
+                    background-color: rgba(107,141,214,0.05);
+                    transform: translateY(-1px);
                 }
                 
                 .avatar-circle {
                     width: 40px;
                     height: 40px;
-                    border-radius: 50%;
+                    border-radius: 12px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     font-weight: bold;
                     font-size: 16px;
+                    background: linear-gradient(135deg, #6B8DD6 0%, #8E37D7 100%);
+                    color: white;
+                    box-shadow: 0 4px 10px rgba(107,141,214,0.2);
+                }
+
+                thead {
+                    background: #f8f9fc;
+                }
+
+                th {
+                    color: #6B8DD6;
+                    font-weight: 600;
+                    padding: 1rem !important;
+                    border-bottom: 2px solid #e1e5eb;
+                }
+
+                td {
+                    padding: 1rem !important;
+                    color: #2c3e50;
+                    vertical-align: middle;
                 }
                 
                 @media (max-width: 768px) {
+                    .dashboard-container {
+                        padding: 1rem;
+                    }
+
+                    .stats-section {
+                        grid-template-columns: 1fr;
+                        gap: 1rem;
+                    }
+
+                    .header-content {
+                        flex-direction: column;
+                        align-items: stretch;
+                    }
+
+                    .search-filter-section {
+                        flex-wrap: wrap;
+                    }
+
+                    .search-box {
+                        width: 100%;
+                    }
+
                     .table-responsive {
                         border: none;
-                    overflow-x: auto;
-                    -webkit-overflow-scrolling: touch;
-                    -ms-overflow-style: -ms-autohiding-scrollbar;
-                    width: 100%;
-                    display: block;
-                    white-space: nowrap;
-                    position: relative;
-                    max-width: 100%;
-                    margin-bottom: 1rem;
-                    border-collapse: collapse !important;
-                    border-spacing: 0;
-                    font-size: 0.875rem;
-                }
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                        -ms-overflow-style: -ms-autohiding-scrollbar;
+                        width: 100%;
+                        display: block;
+                        white-space: nowrap;
+                        position: relative;
+                        max-width: 100%;
+                        margin-bottom: 1rem;
+                        font-size: 0.875rem;
+                    }
                 
                     .table-responsive::-webkit-scrollbar {
                         height: 8px;

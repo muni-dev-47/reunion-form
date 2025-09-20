@@ -1,12 +1,69 @@
-const mysql = require('mysql2');
+import mysql from 'mysql2';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { config } from 'dotenv';
 
-const db = mysql.createConnection({
-    host: 'localhost',
-    port: 3306,
-    user: 'root',
-    password: 'Muni@2004',
-    database: 'employees'
+// Get the directory path of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Load environment variables from .env file
+config({ path: join(__dirname, '..', '.env') });
+
+// First create a connection without specifying the database
+const initialConnection = mysql.createConnection({
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT),
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD
 });
+
+// Function to create database if it doesn't exist
+const createDatabase = () => {
+    return new Promise((resolve, reject) => {
+        initialConnection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME}`, (err, results) => {
+            if (err) {
+                console.error("❌ Database creation failed:", err);
+                reject(err);
+            } else {
+                console.log(`✅ Database '${process.env.DB_NAME}' ready!`);
+                resolve();
+            }
+        });
+    });
+};
+
+// Initialize the main database connection
+let db;
+
+const initializeConnection = async () => {
+    try {
+        await createDatabase();
+        // Now create the main connection with the database specified
+        db = mysql.createConnection({
+            host: process.env.DB_HOST,
+            port: parseInt(process.env.DB_PORT),
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME
+        });
+        return new Promise((resolve, reject) => {
+            db.connect((err) => {
+                if (err) {
+                    console.error("❌ Database connection failed:", err);
+                    reject(err);
+                } else {
+                    console.log("✅ Database connected successfully!");
+                    resolve();
+                }
+            });
+        });
+    } catch (error) {
+        console.error("❌ Database initialization failed:", error);
+        throw error;
+    }
+};
 
 const createTable = () => {
     const sql = `
@@ -29,14 +86,17 @@ const createTable = () => {
     });
 };
 
-db.connect((err) => {
-    if (err) {
-        console.error("❌ Database connection failed:", err);
-        return;
+// Initialize the database and create table
+const init = async () => {
+    try {
+        await initializeConnection();
+        createTable();
+    } catch (error) {
+        console.error("❌ Initialization failed:", error);
+        process.exit(1);
     }
-    console.log("✅ Database connected successfully!");
-    createTable(); // call here directly
-});
+};
+
 
 // Export both
-module.exports = { db, createTable };
+export { db, init as createTable };

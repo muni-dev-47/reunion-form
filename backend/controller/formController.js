@@ -1,4 +1,4 @@
-const { db } = require('../config/connectDB');
+import { db } from '../config/connectDB.js';
 
 const formData = (req, res) => {
     const { name, age, mobileNumber, companyName, jobTitle, address } = req.body;
@@ -34,4 +34,4 @@ const formData = (req, res) => {
     });
 };
 
-module.exports = { formData };
+export { formData };

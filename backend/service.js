@@ -1,18 +1,21 @@
-const express = require('express');
+import express from 'express';
+import cors from 'cors';
+import { createTable } from './config/connectDB.js';
+import formRoutes from './routes/formRoutes.js';
+import tableRoutes from './routes/tableRoutes.js';
+
 const app = express();
-const cors = require('cors');
-const { createTable } = require('./config/connectDB')
 app.use(cors());
 app.use(express.json());
 
 createTable();
 
-app.use("/api", require('./routes/formRoutes'));
-app.use("/api", require('./routes/tableRoutes'));
+app.use("/api", formRoutes);
+app.use("/api", tableRoutes);
 
 const admin = {
     name: "Admin",
-    mobileNumber: "9876543210"
+    mobileNumber: "1234567890"
 };
 
 app.get("/api/login", (req, res) => {

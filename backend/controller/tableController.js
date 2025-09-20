@@ -1,4 +1,4 @@
-const { db } = require("../config/connectDB");
+import { db } from "../config/connectDB.js";
 
 const fetchEmployeesData = (req, res) => {
     const fetchSql = "SELECT * FROM users";
@@ -15,4 +15,4 @@ const fetchEmployeesData = (req, res) => {
     });
 };
 
-module.exports = { fetchEmployeesData };
+export { fetchEmployeesData };
