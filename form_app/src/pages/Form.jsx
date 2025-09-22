@@ -27,7 +27,7 @@ const Form = () => {
   const validateForm = () => {
     let formErrors = {};
 
-    if (!formData?.name) formErrors.name = 'Name is required';
+    if (!formData?.name) formErrors.name = 'Full name is required';
     if (!formData?.age) formErrors.age = 'Age is required';
     else if (isNaN(formData?.age) || formData?.age < 1 || formData?.age > 120)
       formErrors.age = 'Please enter a valid age';
@@ -35,10 +35,15 @@ const Form = () => {
     if (!formData?.mobileNumber) formErrors.mobileNumber = 'Phone number is required';
     else if (!/^\d{10}$/.test(formData?.mobileNumber))
       formErrors.number = 'Please enter a valid 10-digit phone number';
+    if (!formData?.email) formErrors.email = 'Email is required';
+    else if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(formData?.email))
+      formErrors.email = 'Please enter a valid email address';
 
     if (!formData?.companyName) formErrors.companyName = 'Company name is required';
     if (!formData?.jobTitle) formErrors.jobTitle = 'Job title is required';
     if (!formData?.address) formErrors.address = 'Address is required';
+    // if (!formData?.benefit_company) formErrors.benefit_company = 'This field is required';
+    // if (!formData?.benefit_industry) formErrors.benefit_industry = 'This field is required';
 
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
@@ -115,7 +120,7 @@ const Form = () => {
                           </span>
                           <input
                             type="text"
-                            className={`form-control invitation-input ${errors.name ? 'is-invalid' : ''}`}
+                            className={`form-control invitation-input`}
                             id="name"
                             name="name"
                             value={formData?.name || ""}
@@ -134,7 +139,7 @@ const Form = () => {
                           </span>
                           <input
                             type="number"
-                            className={`form-control invitation-input ${errors.age ? 'is-invalid' : ''}`}
+                            className={`form-control invitation-input`}
                             id="age"
                             name="age"
                             value={formData?.age || ""}
@@ -146,7 +151,48 @@ const Form = () => {
                       </div>
                     </div>
 
-                    <div className="mb-4">
+                    <div className="row">
+                      <div className="col-md-6 mb-4">
+                        <label htmlFor="mobileNumber" className="form-label invitation-label">Phone Number</label>
+                        <div className="input-group">
+                          <span className="input-group-text invitation-input-icon">
+                            <i className="bi bi-telephone"></i>
+                          </span>
+                          <input
+                            type="tel"
+                            className={`form-control invitation-input`}
+                            id="mobileNumber"
+                            name="mobileNumber"
+                            value={formData?.mobileNumber || ""}
+                            onChange={handleChange}
+                            placeholder="Enter your number"
+                            maxLength={10}
+                          />
+                        </div>
+                        {errors.mobileNumber && <div className="invalid-feedback d-block">{errors.mobileNumber}</div>}
+                      </div>
+
+                      <div className="col-md-6 mb-4">
+                        <label htmlFor="email" className="form-label invitation-label">Email ID</label>
+                        <div className="input-group">
+                          <span className="input-group-text invitation-input-icon">
+                            <i className="bi bi-envelope"></i>
+                          </span>
+                          <input
+                            type="text"
+                            className={`form-control invitation-input`}
+                            id="email"
+                            name="email"
+                            value={formData?.email || ""}
+                            onChange={handleChange}
+                            placeholder="Enter your email"
+                          />
+                        </div>
+                        {errors.email && <div className="invalid-feedback d-block">{errors.email}</div>}
+                      </div>
+                    </div>
+
+                    {/* <div className="mb-4">
                       <label htmlFor="mobileNumber" className="form-label invitation-label">Phone Number</label>
                       <div className="input-group">
                         <span className="input-group-text invitation-input-icon">
@@ -154,7 +200,7 @@ const Form = () => {
                         </span>
                         <input
                           type="tel"
-                          className={`form-control invitation-input ${errors.number ? 'is-invalid' : ''}`}
+                          className={`form-control invitation-input`}
                           id="mobileNumber"
                           name="mobileNumber"
                           value={formData?.mobileNumber || ""}
@@ -162,8 +208,8 @@ const Form = () => {
                           placeholder="Enter your number"
                         />
                       </div>
-                      {errors.number && <div className="invalid-feedback d-block">{errors.number}</div>}
-                    </div>
+                      {errors.mobileNumber && <div className="invalid-feedback d-block">{errors.mobileNumber}</div>}
+                    </div> */}
 
                     <div className="mb-4">
                       <label htmlFor="companyName" className="form-label invitation-label">Working Company Name</label>
@@ -173,7 +219,7 @@ const Form = () => {
                         </span>
                         <input
                           type="text"
-                          className={`form-control invitation-input ${errors.companyName ? 'is-invalid' : ''}`}
+                          className={`form-control invitation-input`}
                           id="companyName"
                           name="companyName"
                           value={formData?.companyName || ""}
@@ -192,7 +238,7 @@ const Form = () => {
                         </span>
                         <input
                           type="text"
-                          className={`form-control invitation-input ${errors.jobTitle ? 'is-invalid' : ''}`}
+                          className={`form-control invitation-input`}
                           id="jobTitle"
                           name="jobTitle"
                           value={formData?.jobTitle || ''}
@@ -206,11 +252,11 @@ const Form = () => {
                     <div className="mb-4">
                       <label htmlFor="address" className="form-label invitation-label">Address</label>
                       <div className="input-group">
-                        <span className="input-group-text invitation-input-icon">
+                        {/* <span className="input-group-text invitation-input-icon">
                           <i className="bi bi-house-door"></i>
-                        </span>
+                        </span> */}
                         <textarea
-                          className={`form-control invitation-input ${errors.address ? 'is-invalid' : ''}`}
+                          className={`form-control input-background`}
                           id="address"
                           name="address"
                           value={formData?.address || ""}
@@ -220,6 +266,41 @@ const Form = () => {
                         ></textarea>
                       </div>
                       {errors.address && <div className="invalid-feedback d-block">{errors.address}</div>}
+                    </div>
+
+                    <div className="mb-4">
+                      <label htmlFor="address" className="form-label invitation-label">Benefits for the company</label>
+                      <div className="input-group">
+                        {/* <span className="input-group-text invitation-input-icon">
+                          <i className="bi bi-house-door"></i>
+                        </span> */}
+                        <textarea
+                          className={`form-control input-background`}
+                          id="benefit_company"
+                          name="benefit_company"
+                          value={formData?.benefit_company || ""}
+                          onChange={handleChange}
+                          placeholder="Enter the details"
+                          rows="3"
+                        ></textarea>
+                      </div>
+                      {errors.benefit_company && <div className="invalid-feedback d-block">{errors.benefit_company}</div>}
+                    </div>
+
+                    <div className="mb-4">
+                      <label htmlFor="address" className="form-label invitation-label">Benefits for the Industry</label>
+                      <div className="input-group">
+                        <textarea
+                          className={`form-control input-background`}
+                          id="benefit_industry"
+                          name="benefit_industry"
+                          value={formData?.benefit_industry || ""}
+                          onChange={handleChange}
+                          placeholder="Enter the details"
+                          rows="3"
+                        ></textarea>
+                      </div>
+                      {errors.benefit_industry && <div className="invalid-feedback d-block">{errors.benefit_industry}</div>}
                     </div>
 
                     <div className="d-grid mt-4">
@@ -273,6 +354,10 @@ const Form = () => {
           border-radius: 0 8px 8px 0;
           padding: 12px 16px;
           border-left: none;
+          background: #f8f9fa;
+        }
+
+        .input-background {
           background: #f8f9fa;
         }
         

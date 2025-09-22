@@ -72,6 +72,9 @@ const createTable = () => {
             name VARCHAR(100) NOT NULL,
             age INT,
             mobileNumber VARCHAR(15) UNIQUE,
+            email VARCHAR(50) UNIQUE NOT NULL,
+            benefit_company VARCHAR(100),
+            benefit_industry VARCHAR(100),
             companyName VARCHAR(100),
             jobTitle VARCHAR(100),
             address TEXT

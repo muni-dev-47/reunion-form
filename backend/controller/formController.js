@@ -1,19 +1,27 @@
 import { db } from '../config/connectDB.js';
 
 const formData = (req, res) => {
-    const { name, age, mobileNumber, companyName, jobTitle, address } = req.body;
+    const { name, age, mobileNumber, email, companyName, jobTitle, address, benefit_company, benefit_industry } = req.body;
 
     // ✅ Validation
-    if (!name || !mobileNumber) {
-        return res.status(400).json({ message: "Name and Mobile Number required" });
+    if (!name) {
+        return res.status(400).json({ message: "Name is required" });
+    }
+
+    if (!mobileNumber) {
+        return res.status(400).json({ message: "Mobile Number is required" });
+    }
+
+    if (!email) {
+        return res.status(400).json({ message: "Email is required" });
     }
 
     const sql = `
-        INSERT INTO users (name, age, mobileNumber, companyName, jobTitle, address) 
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO users (name, age, mobileNumber, email, companyName, jobTitle, address, benefit_company, benefit_industry) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
-    const values = [name, age, mobileNumber, companyName, jobTitle, address];
+    const values = [name, age, mobileNumber, email, companyName, jobTitle, address, benefit_company, benefit_industry];
 
     db.query(sql, values, (err, result) => {
         if (err) {
