@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import '../AppForm.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearInputDatas, formInput, postFormData } from '../redux/formSlice';
+import { FORM_ERRORS, FORM_STATUS, FORM_MISC, FORM_FIELDS, FORM_REGEX } from '../constants/formMessages';
 import LoginModal from './Login';
+import { FormInput, FormTextArea } from '../components/FormFields';
 
 const Form = () => {
 
@@ -12,44 +15,37 @@ const Form = () => {
   const [submitted, setSubmitted] = useState(false);
   const [submitStatus, setSubmitStatus] = useState("");
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     dispatch(formInput({ name, value }));
-
     if (errors[name]) {
-      setErrors({
-        ...errors,
+      setErrors(prev => ({
+        ...prev,
         [name]: ''
-      });
+      }));
     }
-  };
+  }, [dispatch, errors]);
 
-  const validateForm = () => {
+  const validateForm = useCallback(() => {
     let formErrors = {};
-
-    if (!formData?.name) formErrors.name = 'Full name is required';
-    if (!formData?.age) formErrors.age = 'Age is required';
+    if (!formData?.name) formErrors.name = FORM_ERRORS.nameRequired;
+    if (!formData?.age) formErrors.age = FORM_ERRORS.ageRequired;
     else if (isNaN(formData?.age) || formData?.age < 1 || formData?.age > 120)
-      formErrors.age = 'Please enter a valid age';
-
-    if (!formData?.mobileNumber) formErrors.mobileNumber = 'Phone number is required';
-    else if (!/^\d{10}$/.test(formData?.mobileNumber))
-      formErrors.number = 'Please enter a valid 10-digit phone number';
-    if (!formData?.email) formErrors.email = 'Email is required';
-    else if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(formData?.email))
-      formErrors.email = 'Please enter a valid email address';
-
-    if (!formData?.companyName) formErrors.companyName = 'Company name is required';
-    if (!formData?.jobTitle) formErrors.jobTitle = 'Job title is required';
-    if (!formData?.address) formErrors.address = 'Address is required';
-    // if (!formData?.benefit_company) formErrors.benefit_company = 'This field is required';
-    // if (!formData?.benefit_industry) formErrors.benefit_industry = 'This field is required';
-
+      formErrors.age = FORM_ERRORS.ageInvalid;
+    if (!formData?.mobileNumber) formErrors.mobileNumber = FORM_ERRORS.mobileRequired;
+    else if (!FORM_REGEX.mobile.test(formData?.mobileNumber))
+      formErrors.number = FORM_ERRORS.mobileInvalid;
+    if (!formData?.email) formErrors.email = FORM_ERRORS.emailRequired;
+    else if (!FORM_REGEX.email.test(formData?.email))
+      formErrors.email = FORM_ERRORS.emailInvalid;
+    if (!formData?.companyName) formErrors.companyName = FORM_ERRORS.companyRequired;
+    if (!formData?.jobTitle) formErrors.jobTitle = FORM_ERRORS.jobTitleRequired;
+    if (!formData?.address) formErrors.address = FORM_ERRORS.addressRequired;
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
-  };
+  }, [formData]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     if (validateForm()) {
       const repos = await dispatch(postFormData(formData));
@@ -58,16 +54,15 @@ const Form = () => {
       } else {
         setSubmitStatus("success");
       }
-
       setSubmitted(true);
     }
-  };
+  }, [validateForm, dispatch, formData]);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     dispatch(clearInputDatas());
     setErrors({});
     setSubmitted(false);
-  };
+  }, [dispatch]);
 
   return (
     <div className="container my-5">
@@ -88,10 +83,10 @@ const Form = () => {
                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
                       </svg>
                     </div>
-                    <h3 className="text-success mb-3">Successfully Submitted!</h3>
-                    <p className="text-muted mb-4">Thank you for providing your information. We'll be in touch soon.</p>
+                    <h3 className="text-success mb-3">{FORM_STATUS.success.title}</h3>
+                    <p className="text-muted mb-4">{FORM_STATUS.success.message}</p>
                     <button className="btn btn-outline-primary btn-invitation" onClick={resetForm}>
-                      Submit Another Response
+                      {FORM_STATUS.success.button}
                     </button>
                   </div>
                 ) : (
@@ -101,10 +96,10 @@ const Form = () => {
                         <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM7 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0zm.93 2.412a.5.5 0 0 0-.86.5l.35 1.25a.25.25 0 0 0 .48 0l.35-1.25a.5.5 0 0 0-.45-.5z" />
                       </svg>
                     </div>
-                    <h3 className="text-warning mb-3">Already Submitted!</h3>
-                    <p className="text-muted mb-4">This account has already submitted information.</p>
+                    <h3 className="text-warning mb-3">{FORM_STATUS.already.title}</h3>
+                    <p className="text-muted mb-4">{FORM_STATUS.already.message}</p>
                     <button className="btn btn-outline-primary btn-invitation" onClick={resetForm}>
-                      Try Another Account
+                      {FORM_STATUS.already.button}
                     </button>
                   </div>
                 )
@@ -112,83 +107,59 @@ const Form = () => {
                 (
                   <form onSubmit={handleSubmit}>
                     <div className="row">
-                      <div className="col-md-6 mb-4">
-                        <label htmlFor="name" className="form-label invitation-label">Full Name</label>
-                        <div className="input-group">
-                          <span className="input-group-text invitation-input-icon">
-                            <i className="bi bi-person"></i>
-                          </span>
-                          <input
-                            type="text"
-                            className={`form-control invitation-input`}
-                            id="name"
-                            name="name"
-                            value={formData?.name || ""}
-                            onChange={handleChange}
-                            placeholder="Enter your name"
-                          />
-                        </div>
-                        {errors.name && <div className="invalid-feedback d-block">{errors.name}</div>}
+                      <div className="col-md-6">
+                        <FormInput
+                          type="text"
+                          id={FORM_FIELDS.name.id}
+                          name={FORM_FIELDS.name.name}
+                          value={formData?.name || ""}
+                          onChange={handleChange}
+                          placeholder={FORM_FIELDS.name.label}
+                          icon={FORM_FIELDS.name.icon}
+                          error={errors.name}
+                        />
                       </div>
 
-                      <div className="col-md-6 mb-4">
-                        <label htmlFor="age" className="form-label invitation-label">Age</label>
-                        <div className="input-group">
-                          <span className="input-group-text invitation-input-icon">
-                            <i className="bi bi-calendar3"></i>
-                          </span>
-                          <input
-                            type="number"
-                            className={`form-control invitation-input`}
-                            id="age"
-                            name="age"
-                            value={formData?.age || ""}
-                            onChange={handleChange}
-                            placeholder="Enter your age"
-                          />
-                        </div>
-                        {errors.age && <div className="invalid-feedback d-block">{errors.age}</div>}
+                      <div className="col-md-6">
+                        <FormInput
+                          type="number"
+                          id={FORM_FIELDS.age.id}
+                          name={FORM_FIELDS.age.name}
+                          value={formData?.age || ""}
+                          onChange={handleChange}
+                          placeholder={FORM_FIELDS.age.label}
+                          icon={FORM_FIELDS.age.icon}
+                          error={errors.age}
+                        />
                       </div>
                     </div>
 
                     <div className="row">
-                      <div className="col-md-6 mb-4">
-                        <label htmlFor="mobileNumber" className="form-label invitation-label">Phone Number</label>
-                        <div className="input-group">
-                          <span className="input-group-text invitation-input-icon">
-                            <i className="bi bi-telephone"></i>
-                          </span>
-                          <input
-                            type="tel"
-                            className={`form-control invitation-input`}
-                            id="mobileNumber"
-                            name="mobileNumber"
-                            value={formData?.mobileNumber || ""}
-                            onChange={handleChange}
-                            placeholder="Enter your number"
-                            maxLength={10}
-                          />
-                        </div>
-                        {errors.mobileNumber && <div className="invalid-feedback d-block">{errors.mobileNumber}</div>}
+                      <div className="col-md-6">
+                        <FormInput
+                          type="tel"
+                          id={FORM_FIELDS.mobileNumber.id}
+                          name={FORM_FIELDS.mobileNumber.name}
+                          value={formData?.mobileNumber || ""}
+                          onChange={handleChange}
+                          placeholder={FORM_FIELDS.mobileNumber.label}
+                          icon={FORM_FIELDS.mobileNumber.icon}
+                          error={errors.mobileNumber}
+                          maxLength={10}
+                        />
                       </div>
 
-                      <div className="col-md-6 mb-4">
-                        <label htmlFor="email" className="form-label invitation-label">Email ID</label>
-                        <div className="input-group">
-                          <span className="input-group-text invitation-input-icon">
-                            <i className="bi bi-envelope"></i>
-                          </span>
-                          <input
-                            type="text"
-                            className={`form-control invitation-input`}
-                            id="email"
-                            name="email"
-                            value={formData?.email || ""}
-                            onChange={handleChange}
-                            placeholder="Enter your email"
-                          />
-                        </div>
-                        {errors.email && <div className="invalid-feedback d-block">{errors.email}</div>}
+                      <div className="col-md-6">
+                        <FormInput
+                          type="email"
+                          id={FORM_FIELDS.email.id}
+                          name={FORM_FIELDS.email.name}
+                          value={formData?.email || ""}
+                          onChange={handleChange}
+                          placeholder={FORM_FIELDS.email.label}
+                          icon={FORM_FIELDS.email.icon}
+                          error={errors.email}
+                        />
                       </div>
                     </div>
 
@@ -211,62 +182,38 @@ const Form = () => {
                       {errors.mobileNumber && <div className="invalid-feedback d-block">{errors.mobileNumber}</div>}
                     </div> */}
 
-                    <div className="mb-4">
-                      <label htmlFor="companyName" className="form-label invitation-label">Working Company Name</label>
-                      <div className="input-group">
-                        <span className="input-group-text invitation-input-icon">
-                          <i className="bi bi-building"></i>
-                        </span>
-                        <input
-                          type="text"
-                          className={`form-control invitation-input`}
-                          id="companyName"
-                          name="companyName"
-                          value={formData?.companyName || ""}
-                          onChange={handleChange}
-                          placeholder="Working company name"
-                        />
-                      </div>
-                      {errors.companyName && <div className="invalid-feedback d-block">{errors.companyName}</div>}
-                    </div>
+                    <FormInput
+                      type="text"
+                      id={FORM_FIELDS.companyName.id}
+                      name={FORM_FIELDS.companyName.name}
+                      value={formData?.companyName || ""}
+                      onChange={handleChange}
+                      placeholder={FORM_FIELDS.companyName.label}
+                      icon={FORM_FIELDS.companyName.icon}
+                      error={errors.companyName}
+                    />
 
-                    <div className="mb-4">
-                      <label htmlFor="jobTitle" className="form-label invitation-label">Job Title</label>
-                      <div className="input-group">
-                        <span className="input-group-text invitation-input-icon">
-                          <i className="bi bi-briefcase"></i>
-                        </span>
-                        <input
-                          type="text"
-                          className={`form-control invitation-input`}
-                          id="jobTitle"
-                          name="jobTitle"
-                          value={formData?.jobTitle || ''}
-                          onChange={handleChange}
-                          placeholder="Job title"
-                        />
-                      </div>
-                      {errors.jobTitle && <div className="invalid-feedback d-block">{errors.jobTitle}</div>}
-                    </div>
+                    <FormInput
+                      type="text"
+                      id={FORM_FIELDS.jobTitle.id}
+                      name={FORM_FIELDS.jobTitle.name}
+                      value={formData?.jobTitle || ''}
+                      onChange={handleChange}
+                      placeholder={FORM_FIELDS.jobTitle.label}
+                      icon={FORM_FIELDS.jobTitle.icon}
+                      error={errors.jobTitle}
+                    />
 
-                    <div className="mb-4">
-                      <label htmlFor="address" className="form-label invitation-label">Address</label>
-                      <div className="input-group">
-                        {/* <span className="input-group-text invitation-input-icon">
-                          <i className="bi bi-house-door"></i>
-                        </span> */}
-                        <textarea
-                          className={`form-control input-background`}
-                          id="address"
-                          name="address"
-                          value={formData?.address || ""}
-                          onChange={handleChange}
-                          placeholder="Enter your address"
-                          rows="3"
-                        ></textarea>
-                      </div>
-                      {errors.address && <div className="invalid-feedback d-block">{errors.address}</div>}
-                    </div>
+                    <FormTextArea
+                      id={FORM_FIELDS.address.id}
+                      name={FORM_FIELDS.address.name}
+                      value={formData?.address || ""}
+                      onChange={handleChange}
+                      placeholder={FORM_FIELDS.address.label}
+                      icon={FORM_FIELDS.address.icon}
+                      error={errors.address}
+                      rows={3}
+                    />
 
                     <div className="mb-4">
                       <label htmlFor="address" className="form-label invitation-label">Benefits for the company</label>
@@ -311,7 +258,7 @@ const Form = () => {
             </div>
 
             <div className="card-footer invitation-footer text-center py-3">
-              <p className="mb-2">Your information is secure and will never be shared</p>
+              <p className="mb-2">{FORM_MISC.infoSecure}</p>
               <button
                 type="button"
                 className="btn btn-outline-secondary px-4"
@@ -326,85 +273,6 @@ const Form = () => {
         </div>
       </div>
 
-      <style>{`
-        .invitation-card {
-          border-radius: 20px;
-          overflow: hidden;
-          background: #fff;
-        }
-        
-        .invitation-header {
-          background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-          border-bottom: none;
-        }
-        
-        .invitation-subtitle {
-          color: rgba(255, 255, 255, 0.8);
-          font-size: 1.1rem;
-        }
-        
-        .invitation-label {
-          font-weight: 500;
-          color: #495057;
-          margin-bottom: 8px;
-          font-size: 1rem;
-        }
-        
-        .invitation-input {
-          border-radius: 0 8px 8px 0;
-          padding: 12px 16px;
-          border-left: none;
-          background: #f8f9fa;
-        }
-
-        .input-background {
-          background: #f8f9fa;
-        }
-        
-        .invitation-input:focus {
-          background: #fff;
-          box-shadow: 0 0 0 0.25rem rgba(38, 117, 252, 0.15);
-          border-color: #86b7fe;
-        }
-        
-        .invitation-input-icon {
-          background: #f8f9fa;
-          border-radius: 8px 0 0 8px;
-          border-right: none;
-          color: #6c757d;
-        }
-        
-        .btn-invitation {
-          background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
-          border: none;
-          color: white;
-          padding: 14px 20px;
-          border-radius: 10px;
-          font-weight: 600;
-          transition: all 0.3s;
-        }
-        
-        .btn-invitation:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(38, 117, 252, 0.4);
-          color: white;
-        }
-        
-        .invitation-footer {
-          background: #f8f9fa;
-          border-top: 1px solid #e9ecef;
-          color: #6c757d;
-        }
-        
-        .success-icon {
-          animation: scaleUp 0.5s ease;
-        }
-        
-        @keyframes scaleUp {
-          0% { transform: scale(0.5); opacity: 0; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 };

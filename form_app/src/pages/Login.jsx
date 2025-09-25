@@ -1,6 +1,9 @@
 import React, { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router";
+import { LOGIN_ERRORS, LOGIN_TEXTS } from "../constants/messages";
+import { ROUTES } from "../constants/routes";
+import { API_PATHS } from "../constants/api";
 
 const LoginModal = () => {
     const [name, setName] = useState("");
@@ -8,43 +11,38 @@ const LoginModal = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const navigate = useNavigate();
-    const modalRef = useRef(null); // ✅ useRef for modal
+    const modalRef = useRef(null);
 
     const validateForm = () => {
         const newErrors = {};
-        if (!name.trim()) newErrors.name = "Name is required";
-        else if (name.length < 2) newErrors.name = "Name must be at least 2 characters";
+        if (!name.trim()) newErrors.name = LOGIN_ERRORS.nameRequired;
+        else if (name.length < 2) newErrors.name = LOGIN_ERRORS.nameShort;
 
-        if (!mobileNumber.trim()) newErrors.mobileNumber = "Mobile number is required";
-        else if (!/^\d{10}$/.test(mobileNumber)) newErrors.mobileNumber = "Please enter a valid 10-digit mobile number";
+        if (!mobileNumber.trim()) newErrors.mobileNumber = LOGIN_ERRORS.mobileRequired;
+        else if (!/^\d{10}$/.test(mobileNumber)) newErrors.mobileNumber = LOGIN_ERRORS.mobileInvalid;
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
+    const API_URL = process.env.REACT_APP_API_URL;
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
-
         setIsLoading(true);
         try {
-            const res = await axios.get("http://localhost:5000/api/login", {
+            const res = await axios.get(`${API_URL}${API_PATHS.LOGIN}`, {
                 params: { name, mobileNumber },
             });
-
             if (res.data.message === "Welcome Admin!") {
-
                 document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
                 document.body.classList.remove('modal-open');
-
-
-                navigate("/table");
+                navigate(ROUTES.TABLE);
             } else {
-                setErrors({ general: "Access Denied! Invalid credentials." });
+                setErrors({ general: LOGIN_ERRORS.accessDenied });
             }
         } catch (error) {
-            console.error(error);
-            setErrors({ general: "Something went wrong. Please try again later." });
+            setErrors({ general: LOGIN_ERRORS.general });
         } finally {
             setIsLoading(false);
         }
@@ -69,7 +67,7 @@ const LoginModal = () => {
                 <div className="modal-content">
                     <div className="modal-header bg-primary text-white">
                         <h5 className="modal-title" id="loginModalLabel">
-                            <i className="bi bi-person-circle me-2"></i> Admin Login
+                            <i className="bi bi-person-circle me-2"></i> {LOGIN_TEXTS.adminLogin}
                         </h5>
                         <button
                             type="button"
@@ -90,7 +88,7 @@ const LoginModal = () => {
                         <form onSubmit={handleSubmit}>
                             <div className="mb-3">
                                 <label htmlFor="name" className="form-label">
-                                    Name <span className="text-danger">*</span>
+                                    {LOGIN_TEXTS.name} <span className="text-danger">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -108,7 +106,7 @@ const LoginModal = () => {
                             </div>
                             <div className="mb-4">
                                 <label htmlFor="mobileNumber" className="form-label">
-                                    Mobile Number <span className="text-danger">*</span>
+                                    {LOGIN_TEXTS.mobileNumber} <span className="text-danger">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -134,12 +132,12 @@ const LoginModal = () => {
                                 {isLoading ? (
                                     <>
                                         <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                        Logging in...
+                                        {LOGIN_TEXTS.loggingIn}
                                     </>
                                 ) : (
                                     <>
                                         <i className="bi bi-box-arrow-in-right me-2"></i>
-                                        Login
+                                        {LOGIN_TEXTS.login}
                                     </>
                                 )}
                             </button>

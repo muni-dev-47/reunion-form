@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import EmployeeDetails from "./EmployeeDetails";
 import { useNavigate } from "react-router";
-import { FaUsers, FaUserPlus, FaSearch, FaFilter, FaSortAmountDown } from 'react-icons/fa';
+import { FaUsers, FaSearch, FaSortAmountDown } from 'react-icons/fa';
+import { API_PATHS } from '../constants/api';
 
 const Table = () => {
     const [users, setUsers] = useState([]);
@@ -12,35 +13,35 @@ const Table = () => {
     const [showModal, setShowModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [sortBy, setSortBy] = useState("asc");
-    const [filterActive, setFilterActive] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                setTimeout(() => {
-                    setLoading(false);
-                }, 1000);
-                const res = await axios.get("http://localhost:5000/api/users");
-                setUsers(res.data.data);
-            } catch (err) {
-                setError(err.response?.data || err.message);
+    const API_URL = process.env.REACT_APP_API_URL;
+    const fetchUsers = useCallback(async () => {
+        try {
+            setTimeout(() => {
                 setLoading(false);
-            }
-        };
+            }, 1000);
+            const res = await axios.get(`${API_URL}${API_PATHS.USERS}`);
+            setUsers(res.data.data);
+        } catch (err) {
+            setError(err.response?.data || err.message);
+            setLoading(false);
+        }
+    }, [API_URL]);
 
+    useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [fetchUsers]);
 
-    const handleView = (user) => {
+    const handleView = useCallback((user) => {
         setSelectedUser(user);
         setShowModal(true);
-    };
+    }, []);
 
-    const handleCloseModal = () => {
+    const handleCloseModal = useCallback(() => {
         setShowModal(false);
         setSelectedUser(null);
-    };
+    }, []);
 
     if (loading) return (
         <div className="d-flex justify-content-center align-items-center" style={{ height: "50vh" }}>
@@ -58,12 +59,17 @@ const Table = () => {
     );
 
     const filteredUsers = users.filter(user => 
-        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.mobileNumber.includes(searchTerm)
+        user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.mobileNumber?.includes(searchTerm)
     );
 
     return (
         <div className="dashboard-container">
+            <div className="d-flex justify-content-end mb-3">
+                <button type="button" className="btn btn-outline-secondary px-4" onClick={() => navigate('/')}> 
+                    <i className="bi bi-box-arrow-right me-2"></i> Logout
+                </button>
+            </div>
             {/* Stats Section */}
             <div className="stats-section">
                 <div className="stat-card">
