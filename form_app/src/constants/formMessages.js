@@ -29,7 +29,7 @@ export const FORM_FIELDS = {
     id: 'email',
     name: 'email',
     placeholder: 'Enter your email',
-    icon: 'bi bi-calendar3',
+    icon: 'bi bi-envelope',
   },
   companyName: {
     label: 'Working Company Name',
@@ -51,6 +51,20 @@ export const FORM_FIELDS = {
     name: 'address',
     placeholder: 'Enter your address',
     icon: 'bi bi-house-door',
+  },
+  benefit_company: {
+    label: 'Benefits for the Company',
+    id: 'benefit_company',
+    name: 'benefit_company',
+    placeholder: 'Enter benefits for the company',
+    icon: 'bi bi-building-check',
+  },
+  benefit_industry: {
+    label: 'Benefits for the Industry',
+    id: 'benefit_industry',
+    name: 'benefit_industry',
+    placeholder: 'Enter benefits for the industry',
+    icon: 'bi bi-building-check',
   },
 };
 // src/constants/formMessages.js

@@ -1,4 +1,5 @@
 import React from 'react';
+import '../FormFields.css';
 
 export const FormInput = ({ type = 'text', id, name, value, onChange, placeholder, icon, error, ...rest }) => (
   <div className="mb-4">

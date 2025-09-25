@@ -216,38 +216,29 @@ const Form = () => {
                     />
 
                     <div className="mb-4">
-                      <label htmlFor="address" className="form-label invitation-label">Benefits for the company</label>
-                      <div className="input-group">
-                        {/* <span className="input-group-text invitation-input-icon">
-                          <i className="bi bi-house-door"></i>
-                        </span> */}
-                        <textarea
-                          className={`form-control input-background`}
-                          id="benefit_company"
-                          name="benefit_company"
-                          value={formData?.benefit_company || ""}
-                          onChange={handleChange}
-                          placeholder="Enter the details"
-                          rows="3"
-                        ></textarea>
-                      </div>
-                      {errors.benefit_company && <div className="invalid-feedback d-block">{errors.benefit_company}</div>}
+                      <FormTextArea
+                      id={FORM_FIELDS.benefit_company.id}
+                      name={FORM_FIELDS.benefit_company.name}
+                      value={formData?.benefit_company || ""}
+                      onChange={handleChange}
+                      placeholder={FORM_FIELDS.benefit_company.label}
+                      icon={FORM_FIELDS.benefit_company.icon}
+                      // error={errors.address}
+                      rows={3}
+                    />
                     </div>
 
                     <div className="mb-4">
-                      <label htmlFor="address" className="form-label invitation-label">Benefits for the Industry</label>
-                      <div className="input-group">
-                        <textarea
-                          className={`form-control input-background`}
-                          id="benefit_industry"
-                          name="benefit_industry"
-                          value={formData?.benefit_industry || ""}
-                          onChange={handleChange}
-                          placeholder="Enter the details"
-                          rows="3"
-                        ></textarea>
-                      </div>
-                      {errors.benefit_industry && <div className="invalid-feedback d-block">{errors.benefit_industry}</div>}
+                      <FormTextArea
+                      id={FORM_FIELDS.benefit_industry.id}
+                      name={FORM_FIELDS.benefit_industry.name}
+                      value={formData?.benefit_industry || ""}
+                      onChange={handleChange}
+                      placeholder={FORM_FIELDS.benefit_industry.label}
+                      icon={FORM_FIELDS.benefit_industry.icon}
+                      // error={errors.address}
+                      rows={3}
+                    />
                     </div>
 
                     <div className="d-grid mt-4">
